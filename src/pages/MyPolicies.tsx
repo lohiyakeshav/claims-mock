@@ -20,26 +20,25 @@ interface Policy {
 
 const MyPolicies: React.FC = () => {
   const navigate = useNavigate();
-  const [policies, setPolicies] = useState<Policy[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [policies, setPolicies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   // Fetch policies and ensure the response is in the expected format.
   const fetchPolicies = async () => {
-    setLoading(true);
     try {
-      const data = await userService.getMyPolicies();
-      console.log("Fetched policies:", data);
-
-      // If data is not an array, log an error and show a toast.
-      if (Array.isArray(data)) {
-        setPolicies(data);
+      const response = await userService.getMyPolicies();
+      // Ensure response is an array
+      if (Array.isArray(response)) {
+        setPolicies(response);
       } else {
-        console.error("Unexpected response format:", data);
-        toast.error("Invalid data received from server.");
+        console.error('Invalid policies response:', response);
+        setPolicies([]);
       }
     } catch (error) {
-      console.error("Error fetching policies:", error);
+      console.error("Failed to fetch policies:", error);
       toast.error("Failed to load policies");
+      setPolicies([]); // Reset to empty array
     } finally {
       setLoading(false);
     }
@@ -55,6 +54,10 @@ const MyPolicies: React.FC = () => {
   useEffect(() => {
     console.log("Policies state updated:", policies);
   }, [policies]);
+
+  // Add these logs temporarily
+  console.log('Policies state:', policies);
+  console.log('Loading state:', loading);
 
   // Returns badge styles based on policy status.
   const getStatusBadgeColor = (status: string) => {
@@ -107,29 +110,31 @@ const MyPolicies: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      
+      {/* Loading state */}
       {loading ? (
-        <LoadingSpinner />
+        <div className="flex items-center justify-center h-screen">
+          <LoadingSpinner />
+        </div>
       ) : (
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">My Policies</h1>
+
           {policies.length === 0 ? (
             <div className="text-center py-8 text-gray-600">
-              You don't have any policies yet.
+              No policies found
             </div>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
               {policies.map((policy) => (
                 <div key={policy.id} className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h2 className="text-xl font-semibold mb-2">
-                        {policy.title || "Untitled Policy"}
-                      </h2>
+                      <h3 className="font-semibold text-lg mb-2">
+                        Policy #{policy.id}
+                      </h3>
                       <p className="text-gray-600">
-                        {policy.description || "No description available"}
-                      </p>
-                      <p className="text-gray-600">
-                        Purchased on: {new Date(policy.purchase_date).toLocaleDateString()}
+                        Purchased: {new Date(policy.purchase_date).toLocaleDateString()}
                       </p>
                       {policy.valid_until && (
                         <p className="text-gray-600">
@@ -137,28 +142,47 @@ const MyPolicies: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeColor(policy.status)}`}
-                      >
-                        {policy.status.toUpperCase()}
-                      </span>
-                    </div>
+                    <span className={`px-3 py-1 rounded-full text-sm ${
+                      policy.policy_status === 'approved' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {policy.policy_status?.toUpperCase() || 'UNKNOWN STATUS'}
+                    </span>
                   </div>
-                  {/* Show "Claim Now" button only if the policy is approved and not already claimed */}
-                  {policy.status === 'approved' && policy.claim_status !== 'pending' && (
+
+                  {policy.claim_status && (
+                    <div className={`mt-4 p-3 rounded-lg ${
+                      policy.claim_status === 'approved' ? 'bg-green-50 text-green-700' :
+                      policy.claim_status === 'denied' ? 'bg-red-50 text-red-700' :
+                      'bg-yellow-50 text-yellow-700'
+                    }`}>
+                      <div className="flex justify-between items-center">
+                        <span>
+                          Claim Status: {policy.claim_status.toUpperCase()}
+                          {policy.claim_date && (
+                            <span className="block text-sm mt-1 text-opacity-75">
+                              Submitted: {new Date(policy.claim_date).toLocaleDateString()}
+                            </span>
+                          )}
+                        </span>
+                        {policy.claim_amount && (
+                          <span className="font-semibold">
+                            ₹{Number(policy.claim_amount).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {!policy.claim_status && policy.policy_status === 'approved' && (
                     <Button
                       onClick={() => handleClaim(policy.id)}
-                      className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
+                      className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors w-full sm:w-auto"
+                      disabled={isClaiming}
                     >
-                      Claim Now
+                      {isClaiming ? 'Submitting Claim...' : 'Claim Now'}
                     </Button>
-                  )}
-                  {/* Show pending status if claim is submitted */}
-                  {policy.claim_status === 'pending' && (
-                    <div className="mt-4 text-yellow-600">
-                      Claim submitted. Awaiting admin approval.
-                    </div>
                   )}
                 </div>
               ))}
