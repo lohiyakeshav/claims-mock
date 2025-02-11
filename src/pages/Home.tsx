@@ -11,7 +11,7 @@ const Home = () => {
           <Shield className="w-16 h-16 text-primary" />
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-6xl">
-          Insurance Made Simple
+          Insurance Made Simple w InsurePro
         </h1>
         <p className="text-xl text-gray-600 dark:text-gray-300">
           Secure your future with our comprehensive insurance solutions

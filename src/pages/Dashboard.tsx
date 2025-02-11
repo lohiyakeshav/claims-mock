@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ShoppingCart, LogOut, Home, FileText, Calendar } from "lucide-react";
+import { ShoppingCart, LogOut, Home, FileText, Calendar, Heart, Car, Plane, ChevronDown, Facebook, Twitter, Linkedin, Instagram, Mail, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -30,6 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import Header from '@/components/Header';
 
 interface Product {
   id: number;
@@ -98,6 +99,7 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState<Date>();
   const [medicalHistory, setMedicalHistory] = useState("");
   const [age, setAge] = useState("");
+  const [activeAccordion, setActiveAccordion] = useState<number | null>(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -126,134 +128,223 @@ const Dashboard = () => {
     setSelectedProduct(null);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-8">
-              <Link to="/dashboard" className="flex items-center space-x-2">
-                <Home className="h-5 w-5" />
-                <span className="font-medium">Home</span>
-              </Link>
-              <Link to="/policies" className="flex items-center space-x-2">
-                <FileText className="h-5 w-5" />
-                <span className="font-medium">My Policies</span>
-              </Link>
-            </div>
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+  const insuranceTypes = [
+    {
+      title: 'Health Insurance',
+      icon: <img src="https://img.icons8.com/bubbles/100/apple-health.png" className="w-12 h-12" />,
+      description: "Comprehensive health coverage for you and your family"
+    },
+    {
+      title: 'Life Insurance',
+      icon: <img src="https://img.icons8.com/fluency/48/heart-with-pulse--v1.png" className="w-12 h-12" />,
+      description: "Secure your family's future with our life insurance plans"
+    },
+    {
+      title: 'Motor Insurance',
+      icon: <img src="https://img.icons8.com/color/48/engine.png" className="w-12 h-12" />,
+      description: 'Protect your vehicle with our motor insurance coverage'
+    },
+    {
+      title: 'Travel Insurance',
+      icon: <img src="https://img.icons8.com/ios-filled/50/coconut-cocktail.png" className="w-12 h-12" />,
+      description: 'Travel worry-free with our global coverage insurance plans'
+    }
+  ];
 
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Insurance Products</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-center mb-4">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-24 w-24 dark:invert"
-                  />
-                </div>
-                <CardTitle>{product.name}</CardTitle>
-                <CardDescription>{product.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-center">
-                  ₹{product.price.toLocaleString('en-IN')}
-                  <span className="text-sm text-muted-foreground">/year</span>
-                </p>
-                <div className="mt-4 space-y-2">
-                  <h4 className="font-semibold">Customer Reviews</h4>
-                  {product.reviews.map((review) => (
-                    <div key={review.id} className="border-t pt-2">
-                      <div className="flex justify-between items-start">
-                        <span className="font-medium">{review.name}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {format(new Date(review.date), 'MMM d, yyyy')}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{review.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handlePurchase(product)}
-                      disabled={purchasedProducts.includes(product.id)}
+  const testimonials = [
+    {
+      name: 'Sarah Johnson',
+      role: 'Business Owner',
+      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80',
+      content: "The best insurance experience I've ever had. Quick, efficient, and transparent.",
+      rating: 5
+    },
+    {
+      name: 'Michael Chen',
+      role: 'Software Engineer',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80',
+      content: 'Excellent customer service and competitive rates. Highly recommended!',
+      rating: 5
+    },
+    {
+      name: 'Emily Rodriguez',
+      role: 'Teacher',
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80',
+      content: 'Made insurance simple and affordable. Great experience overall!',
+      rating: 4
+    }
+    // ... your existing testimonials array ...
+  ];
+
+  const faqs = [
+    {
+      question: 'How do I file a claim?',
+      answer: 'Filing a claim is easy! Simply log into your account, navigate to the claims section, and follow the step-by-step process. Our support team is available 24/7 to assist you.'
+    },
+    {
+      question: 'What types of insurance do you offer?',
+      answer: 'We offer a wide range of insurance products including life, motor, travel, health, and property insurance. Each type comes with multiple plans to suit your specific needs.'
+    },
+    {
+      question: 'How long does it take to process a claim?',
+      answer: 'Most claims are processed within 48-72 hours. However, complex cases might take longer. We keep you updated throughout the process.'
+    }
+    // ... your existing faqs array ...
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="pt-24">
+        <section className="pt-24 pb-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+          <div className="container mx-auto px-4 py-16">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Protect What Matters Most</h1>
+              <p className="text-xl mb-8">Get comprehensive insurance coverage tailored to your needs</p>
+              <button className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-100 transition-colors"
+              onClick={() => navigate('/products')}
+              >
+                Explore Plans
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-4 gap-8">
+              {insuranceTypes.map((insurance, index) => (
+                <div key={index} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="flex flex-col items-center text-center">
+                    {insurance.icon}
+                    <h3 className="text-xl font-semibold mt-4 mb-2">{insurance.title}</h3>
+                    <p className="text-gray-600 mb-4">{insurance.description}</p>
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors"
+                    onClick={() => navigate('/products')}
                     >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      {purchasedProducts.includes(product.id) ? "Pending Approval" : "Buy Now"}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Purchase Insurance Policy</DialogTitle>
-                      <DialogDescription>
-                        Please provide the required information to proceed with the purchase.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="age">Age</Label>
-                        <Input
-                          id="age"
-                          type="number"
-                          value={age}
-                          onChange={(e) => setAge(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="medical-history">Medical History</Label>
-                        <Textarea
-                          id="medical-history"
-                          value={medicalHistory}
-                          onChange={(e) => setMedicalHistory(e.target.value)}
-                          placeholder="Please provide any relevant medical history..."
-                        />
-                      </div>
-                      <div>
-                        <Label>Policy End Date</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full justify-start text-left font-normal">
-                              <Calendar className="mr-2 h-4 w-4" />
-                              {endDate ? format(endDate, "PPP") : "Pick a date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <CalendarComponent
-                              mode="single"
-                              selected={endDate}
-                              onSelect={setEndDate}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                      Learn More
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="bg-white p-6 rounded-xl shadow-lg">
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="ml-4">
+                      <h4 className="font-semibold">{testimonial.name}</h4>
+                      <p className="text-gray-600 text-sm">{testimonial.role}</p>
                     </div>
-                    <DialogFooter>
-                      <Button onClick={confirmPurchase}>Confirm Purchase</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                  </div>
+                  <p className="text-gray-600 mb-4">{testimonial.content}</p>
+                  <div className="flex text-yellow-400">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <span key={i}>★</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <div className="max-w-3xl mx-auto">
+              {faqs.map((faq, index) => (
+                <div key={index} className="mb-4">
+                  <button
+                    className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setActiveAccordion(activeAccordion === index ? null : index)}
+                  >
+                    <span className="font-semibold">{faq.question}</span>
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform ${
+                        activeAccordion === index ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  {activeAccordion === index && (
+                    <div className="p-4 bg-white border border-gray-200 rounded-b-lg">
+                      <p className="text-gray-600">{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-gray-900 text-white py-12">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-4 gap-8">
+              <div>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Heart className="w-6 h-6" />
+                  <span className="text-xl font-bold">InsurePro</span>
+                </div>
+                <p className="text-gray-400">Protecting what matters most to you.</p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                <ul className="space-y-2">
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Products</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Claims</a></li>
+                  <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
+                <div className="space-y-2">
+                  <p className="flex items-center text-gray-400">
+                    <Phone className="w-4 h-4 mr-2" />
+                    1-800-123-4567
+                  </p>
+                  <p className="flex items-center text-gray-400">
+                    <Mail className="w-4 h-4 mr-2" />
+                    support@insurepro.com
+                  </p>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
+                <div className="flex space-x-4">
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Facebook className="w-6 h-6" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Twitter className="w-6 h-6" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Linkedin className="w-6 h-6" />
+                  </a>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <Instagram className="w-6 h-6" />
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+              <p className="text-gray-400">© 2025 Keshav Lohiya. All rights reserved.</p>
+              <p className="text-gray-400 mt-2">Made with ❤️ in Noida</p>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
