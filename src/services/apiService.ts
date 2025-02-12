@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
 
 // Base URL for the API
-const BASE_URL = 'http://localhost:3000/api'; // Update with your backend URL
+const BASE_URL = 'https://lumiq-work.baldkiwi69.workers.dev/api'; // Update with your backend URL
 
 // Helper function to handle API requests
 const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
@@ -14,7 +14,7 @@ const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     ...options.headers,
   };
 
-  const response = await fetch(`http://localhost:3000/api${endpoint}`, {
+  const response = await fetch(`https://lumiq-work.baldkiwi69.workers.dev/api${endpoint}`, {
     ...options,
     headers,
   });
