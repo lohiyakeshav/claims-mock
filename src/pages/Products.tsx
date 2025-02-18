@@ -132,6 +132,7 @@ const Products = () => {
           <div>
             <label className="block mb-2">Revelant History</label>
             <Input
+              required={true}
               value={medicalHistory}
               onChange={(e) => setMedicalHistory(e.target.value)}
               placeholder="Enter your revelant history"
@@ -140,6 +141,7 @@ const Products = () => {
           <div>
             <label className="block mb-2">Age</label>
             <Input
+              required={true}
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
@@ -149,6 +151,7 @@ const Products = () => {
           <div>
             <label className="block mb-2">Policy End Date</label>
             <Input
+              required={true}
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
