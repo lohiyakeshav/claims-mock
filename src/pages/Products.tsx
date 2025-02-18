@@ -128,40 +128,46 @@ const Products = () => {
         <DialogHeader>
           <DialogTitle>Purchase {selectedProduct.title}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-2">Revelant History</label>
-            <Input
-              required={true}
-              value={medicalHistory}
-              onChange={(e) => setMedicalHistory(e.target.value)}
-              placeholder="Enter your revelant history"
-            />
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          handlePurchase();
+        }}>
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-2">Relevant History</label>
+              <Input
+                required
+                value={medicalHistory}
+                onChange={(e) => setMedicalHistory(e.target.value)}
+                placeholder="Enter your relevant history"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Age</label>
+              <Input
+                required
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Enter your age"
+                min="18"
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Policy End Date</label>
+              <Input
+                required
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Processing..." : `Purchase for ₹${selectedProduct.premium}`}
+            </Button>
           </div>
-          <div>
-            <label className="block mb-2">Age</label>
-            <Input
-              required={true}
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="Enter your age"
-            />
-          </div>
-          <div>
-            <label className="block mb-2">Policy End Date</label>
-            <Input
-              required={true}
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-            />
-          </div>
-          <Button className="w-full" onClick={handlePurchase} disabled={loading}>
-            {loading ? "Processing..." : `Purchase for ₹${selectedProduct.premium}`}
-          </Button>
-        </div>
+        </form>
       </motion.div>
     </DialogContent>
   </Dialog>
